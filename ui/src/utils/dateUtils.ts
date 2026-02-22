@@ -58,14 +58,12 @@ export function formatDateShort(dateStr: string): string {
 
 export function getWeekDates(centerDate?: string): string[] {
     const center = centerDate ? new Date(centerDate + 'T00:00:00') : new Date();
-    const dayOfWeek = center.getDay();
-    const monday = new Date(center);
-    monday.setDate(center.getDate() - ((dayOfWeek + 6) % 7));
 
     const dates: string[] = [];
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
+    // Create a rolling 7-day window: 3 days before, current day, 3 days after
+    for (let i = -3; i <= 3; i++) {
+        const d = new Date(center);
+        d.setDate(center.getDate() + i);
         dates.push(toDateString(d));
     }
     return dates;

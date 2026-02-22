@@ -94,7 +94,7 @@ export default function Journal() {
                                 <button
                                     className="btn-link"
                                     onClick={handleRefreshPrompt}
-                                    style={{ color: 'var(--text-muted)' }}
+                                    style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
                                     title="Try another prompt"
                                 >
                                     <RefreshCw size={12} />
@@ -177,13 +177,17 @@ export default function Journal() {
                     </div>
                 </div>
             ) : (
-                <button
-                    className="btn"
-                    onClick={() => setShowNewEntry(true)}
-                    style={{ width: '100%', marginBottom: 'var(--space-xl)' }}
-                >
-                    <Plus size={18} /> Write a New Page
-                </button>
+                <div className="card" style={{ background: 'rgba(122, 28, 42, 0.05)', borderColor: 'rgba(122, 28, 42, 0.2)', cursor: 'pointer', marginBottom: 'var(--space-xl)' }} onClick={() => setShowNewEntry(true)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', color: 'var(--ribbon)' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--ribbon)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                            <Plus size={20} />
+                        </div>
+                        <div>
+                            <div className="handwriting" style={{ fontSize: '1.2rem', fontWeight: 600 }}>Write a New Page</div>
+                            <div style={{ fontSize: '0.85rem', opacity: 0.7 }}>Add a new entry to your diary</div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Past Entries */}

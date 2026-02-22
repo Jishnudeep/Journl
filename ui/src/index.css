@@ -255,29 +255,18 @@ h3 {
   width: 100%;
   position: relative;
   background: var(--bg-main);
-  box-shadow: 0 0 100px rgba(0, 0, 0, 0.1);
-  /* Simulation of the book's shadow on a desk */
 }
 
-/* Leather Trim for spread view */
+/* Center line for spread view */
 @media (min-width: 1024px) {
-  .app-layout {
-    border-left: 40px solid var(--leather-dark);
-    border-right: 40px solid var(--leather-dark);
-    border-radius: 8px;
-    margin-top: 40px;
-    margin-bottom: 40px;
-    min-height: calc(100vh - 80px);
-  }
-
   .app-layout::before {
     content: '';
     position: absolute;
     left: 50%;
     top: 0;
     bottom: 0;
-    width: 2px;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+    width: 1px;
+    background: var(--border-color);
     z-index: 10;
     pointer-events: none;
   }
@@ -337,8 +326,7 @@ h3 {
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   width: 100%;
   height: var(--nav-height);
   background: linear-gradient(to bottom, var(--leather-light), var(--leather));
@@ -401,7 +389,7 @@ h3 {
 .fab {
   position: fixed;
   bottom: calc(var(--nav-height) + var(--space-md));
-  right: max(var(--space-lg), calc(50% - 700px + var(--space-lg)));
+  right: var(--space-lg);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -429,6 +417,12 @@ h3 {
 .fab svg {
   width: 24px;
   height: 24px;
+}
+
+@media (min-width: 1024px) {
+  .fab {
+    right: var(--space-2xl);
+  }
 }
 
 /* ========================================
@@ -1286,42 +1280,6 @@ select.input-field {
    RESPONSIVE — Desktop
    ======================================== */
 @media (min-width: 768px) {
-  .app-layout {
-    border-left: 3px solid var(--leather);
-    border-right: 3px solid var(--leather);
-    box-shadow: -8px 0 24px var(--paper-shadow), 8px 0 24px var(--paper-shadow);
-  }
-
-  .bottom-nav {
-    border-left: 3px solid var(--leather);
-    border-right: 3px solid var(--leather);
-  }
-
-  /* Leather border stitching */
-  .app-layout::before,
-  .app-layout::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: repeating-linear-gradient(to bottom,
-        var(--gold) 0px,
-        var(--gold) 4px,
-        transparent 4px,
-        transparent 12px);
-    z-index: 10;
-    pointer-events: none;
-  }
-
-  .app-layout::before {
-    left: calc(50% - 450px - 1px);
-  }
-
-  .app-layout::after {
-    right: calc(50% - 450px - 1px);
-  }
-
   h1 {
     font-size: 2rem;
   }

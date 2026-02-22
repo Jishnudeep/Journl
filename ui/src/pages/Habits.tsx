@@ -27,8 +27,8 @@ export default function Habits() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [encouragement, setEncouragement] = useState<string | null>(null);
 
-    const weekDates = getWeekDates(selectedDate);
     const today = getToday();
+    const weekDates = getWeekDates(selectedDate);
     const dayOfWeek = getDayOfWeek(new Date(selectedDate + 'T00:00:00'));
 
     // Filter habits scheduled for selected day
@@ -65,7 +65,7 @@ export default function Habits() {
 
     return (
         <div className="page-content">
-            {/* Left Page: Planning & Stats */}
+            {/* Left Page: Daily Execution */}
             <div className="ledger-page">
                 {/* Week Strip */}
                 <div className="week-strip">
@@ -93,9 +93,20 @@ export default function Habits() {
 
                 {/* Daily Percentage & Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
-                    <h2 className="section-header" style={{ borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
-                        {formatDateShort(selectedDate)}
-                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+                        <h2 className="section-header" style={{ borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
+                            {formatDateShort(selectedDate)}
+                        </h2>
+                        {selectedDate !== today && (
+                            <button
+                                className="btn-secondary btn-small"
+                                onClick={() => setSelectedDate(today)}
+                                style={{ padding: '4px 12px', fontSize: '0.85rem', borderRadius: 'var(--radius-xl)' }}
+                            >
+                                Go to Today
+                            </button>
+                        )}
+                    </div>
                     {scheduledHabits.length > 0 && (
                         <div className={`daily-pct ${pctRange}`}>
                             {dailyPct}% — {getPercentageLabel(pctRange)}
@@ -111,11 +122,8 @@ export default function Habits() {
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* Right Page: Journaling / Habit Execution */}
-            <div className="ledger-page">
-                {/* Habits List */}
+                {/* Habits List for Selected Day */}
                 {scheduledHabits.length === 0 ? (
                     <div className="empty-state">
                         <div className="icon">📝</div>
@@ -124,14 +132,15 @@ export default function Habits() {
                     </div>
                 ) : (
                     <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
-                        {scheduledHabits.map(habit => {
+                        {scheduledHabits.map((habit, index) => {
                             const log = getHabitLog(habit.id);
                             const progress = log ? log.progress : 0;
                             const completed = log ? log.completed : false;
                             const progressPct = (progress / habit.target) * 100;
+                            const isLast = index === scheduledHabits.length - 1;
 
                             return (
-                                <div className="habit-item-complex" key={habit.id} style={{ padding: 'var(--space-md) 0', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
+                                <div className="habit-item-complex" key={habit.id} style={{ padding: 'var(--space-md) 0', borderBottom: isLast ? 'none' : '1px solid var(--border-color)', position: 'relative' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
                                         <button
                                             className={`habit-check ${completed ? 'checked' : ''}`}
@@ -165,34 +174,72 @@ export default function Habits() {
                                             <button
                                                 className="btn-link"
                                                 onClick={(e) => { e.stopPropagation(); handleIncrement(habit.id); }}
-                                                style={{ color: 'var(--leather)', opacity: 0.8 }}
+                                                style={{ color: 'var(--leather)', opacity: 0.8, background: 'none', border: 'none', cursor: 'pointer' }}
                                             >
                                                 <PlusCircle size={20} />
                                             </button>
                                         )}
-
-                                        <button
-                                            className="btn-secondary btn-small"
-                                            onClick={() => handleDeleteHabit(habit.id)}
-                                            aria-label={`Delete ${habit.name}`}
-                                            style={{ border: 'none', color: 'var(--text-muted)', padding: '4px', opacity: 0.4 }}
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
                 )}
+            </div>
 
-                {/* Add Habit Section */}
+            {/* Right Page: Habit Library & Management */}
+            <div className="ledger-page">
                 {showAddModal ? (
                     <AddHabitForm onClose={() => setShowAddModal(false)} />
                 ) : (
-                    <button className="btn" onClick={() => setShowAddModal(true)} style={{ width: '100%' }}>
-                        <Plus size={18} /> New Habit
-                    </button>
+                    <>
+                        <h2 className="section-header">Habit Library</h2>
+
+                        <div className="card" style={{ background: 'rgba(122, 28, 42, 0.05)', borderColor: 'rgba(122, 28, 42, 0.2)', cursor: 'pointer', marginBottom: 'var(--space-lg)' }} onClick={() => setShowAddModal(true)}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', color: 'var(--ribbon)' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--ribbon)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                    <Plus size={20} />
+                                </div>
+                                <div>
+                                    <div className="handwriting" style={{ fontSize: '1.2rem', fontWeight: 600 }}>Create a New Habit</div>
+                                    <div style={{ fontSize: '0.85rem', opacity: 0.7 }}>Add a new habit to your routine</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {state.habits.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="icon">🌱</div>
+                                <div className="title">Your library is empty</div>
+                                <div className="subtitle">Create habits to build your routine</div>
+                            </div>
+                        ) : (
+                            <div className="card">
+                                {state.habits.map((habit, index) => {
+                                    const isLast = index === state.habits.length - 1;
+                                    return (
+                                        <div className="habit-item" key={habit.id} style={{ padding: 'var(--space-md) 0', borderBottom: isLast ? 'none' : '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+                                            <div className="habit-emoji" style={{ fontSize: '1.5rem' }}>{habit.emoji}</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div className="habit-name">{habit.name}</div>
+                                                <div className="handwriting" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                    {habit.target} {habit.unit} • {habit.frequency.length === 7 ? 'Everyday' : habit.frequency.join(', ')}
+                                                </div>
+                                            </div>
+                                            <button
+                                                className="btn-secondary btn-small"
+                                                onClick={() => handleDeleteHabit(habit.id)}
+                                                aria-label={`Delete ${habit.name}`}
+                                                style={{ border: 'none', color: 'var(--text-muted)', padding: '4px', opacity: 0.6 }}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>
