@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PenTool, Eye, EyeOff } from 'lucide-react';
+import { PenTool } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getToday, getDayOfWeek } from '../utils/dateUtils';
 import { calculateConsistencyScore, calculateDailyPercentage, calculateStreak } from '../utils/consistency';
@@ -104,139 +104,161 @@ export default function Dashboard() {
                 />
             )}
 
-            {/* Warm Greeting */}
-            <div style={{ marginBottom: 'var(--space-lg)' }}>
-                <h1 className="cursive" style={{ fontSize: '1.8rem', marginBottom: '4px' }}>{greeting}</h1>
-                {daysSinceLastEntry !== null && daysSinceLastEntry > 1 && (
-                    <div className="handwriting" style={{ color: 'var(--text-secondary)', fontSize: '1rem', opacity: 0.8 }}>
-                        {daysSinceLastEntry === 1 ? "It's been a day" : `It's been ${daysSinceLastEntry} days`} since your last reflection. 📖
-                    </div>
-                )}
-                {dailyPct === 100 && allTodaysHabits.length > 0 && (
-                    <div className="handwriting" style={{ color: 'var(--gold)', fontSize: '1rem' }}>
-                        {getRandomItem(ENCOURAGEMENTS_ON_COMPLETE)}
-                    </div>
-                )}
-            </div>
-
-            {/* Consistency Ring + Streak */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xl)', marginBottom: 'var(--space-xl)' }}>
-                <div className="consistency-ring">
-                    <svg width="120" height="120" viewBox="0 0 150 150">
-                        <circle className="ring-bg" cx="75" cy="75" r={ringRadius} strokeWidth="8" />
-                        <circle
-                            className="ring-fill"
-                            cx="75" cy="75" r={ringRadius}
-                            strokeWidth="8"
-                            stroke="var(--leather)"
-                            strokeDasharray={ringCircumference}
-                            strokeDashoffset={ringOffset}
-                            transform="rotate(-90 75 75)"
-                        />
-                        <text className="ring-text" x="75" y="70" textAnchor="middle" fontSize="28">
-                            {consistencyScore}%
-                        </text>
-                        <text className="ring-label" x="75" y="90" textAnchor="middle" fontSize="13">
-                            consistency
-                        </text>
-                    </svg>
+            {/* Left Page (Overview & Habits) */}
+            <div className="ledger-page">
+                {/* Warm Greeting */}
+                <div style={{ marginBottom: 'var(--space-lg)' }}>
+                    <h1 className="cursive" style={{ fontSize: '1.8rem', marginBottom: '4px' }}>{greeting}</h1>
+                    {daysSinceLastEntry !== null && daysSinceLastEntry > 1 && (
+                        <div className="handwriting" style={{ color: 'var(--text-secondary)', fontSize: '1rem', opacity: 0.8 }}>
+                            {daysSinceLastEntry === 1 ? "It's been a day" : `It's been ${daysSinceLastEntry} days`} since your last reflection. 📖
+                        </div>
+                    )}
+                    {dailyPct === 100 && allTodaysHabits.length > 0 && (
+                        <div className="handwriting" style={{ color: 'var(--gold)', fontSize: '1rem' }}>
+                            {getRandomItem(ENCOURAGEMENTS_ON_COMPLETE)}
+                        </div>
+                    )}
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
-                    <div className="streak-badge">
-                        <span className="fire">🔥</span>
-                        <span>{streak} {streak === 1 ? 'day' : 'days'}</span>
+                {/* Consistency Ring + Streak */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xl)', marginBottom: 'var(--space-xl)' }}>
+                    <div className="consistency-ring">
+                        <svg width="120" height="120" viewBox="0 0 150 150">
+                            <circle className="ring-bg" cx="75" cy="75" r={ringRadius} strokeWidth="8" />
+                            <circle
+                                className="ring-fill"
+                                cx="75" cy="75" r={ringRadius}
+                                strokeWidth="8"
+                                stroke="var(--leather)"
+                                strokeDasharray={ringCircumference}
+                                strokeDashoffset={ringOffset}
+                                transform="rotate(-90 75 75)"
+                            />
+                            <text className="ring-text" x="75" y="70" textAnchor="middle" fontSize="28">
+                                {consistencyScore}%
+                            </text>
+                            <text className="ring-label" x="75" y="90" textAnchor="middle" fontSize="13">
+                                consistency
+                            </text>
+                        </svg>
                     </div>
 
-                    {allTodaysHabits.length > 0 && (
-                        <div className={`daily-pct ${pctRange}`}>
-                            {dailyPct}% — {getPercentageLabel(pctRange)}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                        <div className="streak-badge">
+                            <span className="fire">🔥</span>
+                            <span>{streak} {streak === 1 ? 'day' : 'days'}</span>
+                        </div>
+
+                        {allTodaysHabits.length > 0 && (
+                            <div className={`daily-pct ${pctRange}`}>
+                                {dailyPct}% — {getPercentageLabel(pctRange)}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Today's Habits */}
+                <div style={{ marginBottom: 'var(--space-xl)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
+                        <div className="section-header" style={{ marginBottom: 0 }}>
+                            Today's Habits {state.focusMode && `(First 3)`}
+                        </div>
+                        <div
+                            className={`ink-toggle ${state.focusMode ? 'active' : ''}`}
+                            onClick={() => dispatch({ type: 'TOGGLE_FOCUS_MODE' })}
+                            title={state.focusMode ? 'Show All Habits' : 'Enter Focus Mode'}
+                        >
+                            <div className="track">
+                                <div className="thumb" />
+                            </div>
+                            <span className="label">{state.focusMode ? 'Focus On' : 'Focus Mode'}</span>
+                        </div>
+                    </div>
+
+                    {todaysHabits.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="icon">📝</div>
+                            <div className="title">No habits yet</div>
+                            <div className="subtitle">Tap the Habits tab to add your first habit</div>
+                        </div>
+                    ) : (
+                        <div className="card">
+                            {todaysHabits.map(habit => {
+                                const completed = isHabitCompleted(habit.id);
+                                return (
+                                    <div className="habit-item" key={habit.id}>
+                                        <button
+                                            className={`habit-check ${completed ? 'checked' : ''}`}
+                                            onClick={() => handleToggleHabit(habit.id)}
+                                            aria-label={`Mark ${habit.name} as ${completed ? 'incomplete' : 'complete'}`}
+                                        >
+                                            {completed && (
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                                    <path d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        <div className="habit-info">
+                                            <div className="habit-name" style={{ textDecoration: completed ? 'line-through' : 'none', opacity: completed ? 0.6 : 1 }}>
+                                                {habit.name}
+                                            </div>
+                                            <div className="habit-target">{habit.target} {habit.unit}</div>
+                                        </div>
+                                        <div className="habit-emoji">{habit.emoji}</div>
+                                    </div>
+                                );
+                            })}
+                            {!state.focusMode && allTodaysHabits.length > 3 && (
+                                <div style={{ textAlign: 'center', padding: 'var(--space-sm)', opacity: 0.6 }} className="handwriting">
+                                    Focusing on your journey...
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Today's Habits */}
-            <div style={{ marginBottom: 'var(--space-xl)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
-                    <div className="section-header" style={{ marginBottom: 0 }}>
-                        Today's Habits {state.focusMode && `(First 3)`}
-                    </div>
-                    <button
-                        className="btn-link handwriting"
-                        onClick={() => dispatch({ type: 'TOGGLE_FOCUS_MODE' })}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem' }}
-                    >
-                        {state.focusMode ? <><Eye size={14} /> Show All</> : <><EyeOff size={14} /> Focus Mode</>}
-                    </button>
-                </div>
+            {/* Right Page (Journal & Quick Actions) */}
+            <div className="ledger-page">
+                {/* Latest Journal Entry */}
+                <div style={{ marginBottom: 'var(--space-xl)' }}>
+                    <div className="section-header">Latest Entry</div>
 
-                {todaysHabits.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="icon">📝</div>
-                        <div className="title">No habits yet</div>
-                        <div className="subtitle">Tap the Habits tab to add your first habit</div>
-                    </div>
-                ) : (
-                    <div className="card">
-                        {todaysHabits.map(habit => {
-                            const completed = isHabitCompleted(habit.id);
-                            return (
-                                <div className="habit-item" key={habit.id}>
-                                    <button
-                                        className={`habit-check ${completed ? 'checked' : ''}`}
-                                        onClick={() => handleToggleHabit(habit.id)}
-                                        aria-label={`Mark ${habit.name} as ${completed ? 'incomplete' : 'complete'}`}
-                                    >
-                                        {completed && (
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                                <path d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                    <div className="habit-info">
-                                        <div className="habit-name" style={{ textDecoration: completed ? 'line-through' : 'none', opacity: completed ? 0.6 : 1 }}>
-                                            {habit.name}
-                                        </div>
-                                        <div className="habit-target">{habit.target} {habit.unit}</div>
-                                    </div>
-                                    <div className="habit-emoji">{habit.emoji}</div>
+                    {latestEntry ? (
+                        <div className="journal-preview" onClick={() => navigate('/journal')}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-sm)' }}>
+                                <span className="preview-mood">{MOOD_EMOJIS[latestEntry.mood]}</span>
+                                <div style={{ flex: 1 }}>
+                                    <div className="preview-snippet">{latestEntry.content || 'No content'}</div>
+                                    <div className="preview-time">{latestEntry.time} · {latestEntry.date}</div>
                                 </div>
-                            );
-                        })}
-                        {!state.focusMode && allTodaysHabits.length > 3 && (
-                            <div style={{ textAlign: 'center', padding: 'var(--space-sm)', opacity: 0.6 }} className="handwriting">
-                                Focusing on your journey...
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Latest Journal Entry */}
-            <div style={{ marginBottom: 'var(--space-xl)' }}>
-                <div className="section-header">Latest Entry</div>
-
-                {latestEntry ? (
-                    <div className="journal-preview" onClick={() => navigate('/journal')}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-sm)' }}>
-                            <span className="preview-mood">{MOOD_EMOJIS[latestEntry.mood]}</span>
-                            <div style={{ flex: 1 }}>
-                                <div className="preview-snippet">{latestEntry.content || 'No content'}</div>
-                                <div className="preview-time">{latestEntry.time} · {latestEntry.date}</div>
                             </div>
                         </div>
+                    ) : (
+                        <div className="empty-state">
+                            <div className="icon">📖</div>
+                            <div className="title">Your diary awaits</div>
+                            <div className="subtitle">Tap the pen to write your first entry</div>
+                        </div>
+                    )}
+                </div>
+
+                {/* FAB - Integrated as a 'Add New' card for spread view consistency */}
+                <div className="card" style={{ background: 'rgba(122, 28, 42, 0.05)', borderColor: 'rgba(122, 28, 42, 0.2)', cursor: 'pointer' }} onClick={() => navigate('/journal?new=1')}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', color: 'var(--ribbon)' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--ribbon)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                            <PenTool size={20} />
+                        </div>
+                        <div>
+                            <div className="handwriting" style={{ fontSize: '1.2rem', fontWeight: 600 }}>Reflect on Today</div>
+                            <div style={{ fontSize: '0.85rem', opacity: 0.7 }}>Add a new page to your story</div>
+                        </div>
                     </div>
-                ) : (
-                    <div className="empty-state">
-                        <div className="icon">📖</div>
-                        <div className="title">Your diary awaits</div>
-                        <div className="subtitle">Tap the pen to write your first entry</div>
-                    </div>
-                )}
+                </div>
             </div>
 
-            {/* FAB */}
+            {/* FAB - Fixed (Mobile Only or additional access) */}
             <button className="fab" onClick={() => navigate('/journal?new=1')} aria-label="New journal entry">
                 <PenTool />
             </button>

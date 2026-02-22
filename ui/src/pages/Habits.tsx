@@ -65,137 +65,142 @@ export default function Habits() {
 
     return (
         <div className="page-content">
-            {/* Week Strip */}
-            <div className="week-strip">
-                {weekDates.map(dateStr => {
-                    const d = new Date(dateStr + 'T00:00:00');
-                    const isToday = dateStr === today;
-                    const isSelected = dateStr === selectedDate;
-                    const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 3);
-                    const dayNum = d.getDate();
-                    const dayPct = calculateDailyPercentage(state.habits, state.habitLogs, dateStr);
-
-                    return (
-                        <div
-                            key={dateStr}
-                            className={`week-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayPct >= 50 ? 'completed' : ''}`}
-                            onClick={() => setSelectedDate(dateStr)}
-                        >
-                            <span className="day-label">{dayLabel}</span>
-                            <span className="day-num">{dayNum}</span>
-                            <span className="dot" />
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Daily Percentage */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
-                <h2 className="section-header" style={{ borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
-                    {formatDateShort(selectedDate)}
-                </h2>
-                {scheduledHabits.length > 0 && (
-                    <div className={`daily-pct ${pctRange}`}>
-                        {dailyPct}% — {getPercentageLabel(pctRange)}
-                    </div>
-                )}
-            </div>
-
-            {/* Micro-Encouragement Nudge */}
-            <div style={{ height: '24px', marginBottom: 'var(--space-md)' }}>
-                {encouragement && (
-                    <div className="handwriting fade-in" style={{ color: 'var(--leather)', fontSize: '0.9rem', textAlign: 'center' }}>
-                        {encouragement}
-                    </div>
-                )}
-            </div>
-
-            {/* Habits List */}
-            {scheduledHabits.length === 0 ? (
-                <div className="empty-state">
-                    <div className="icon">📝</div>
-                    <div className="title">No habits for this day</div>
-                    <div className="subtitle">Add a new habit to get started</div>
-                </div>
-            ) : (
-                <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
-                    {scheduledHabits.map(habit => {
-                        const log = getHabitLog(habit.id);
-                        const progress = log ? log.progress : 0;
-                        const completed = log ? log.completed : false;
-                        const progressPct = (progress / habit.target) * 100;
+            {/* Left Page: Planning & Stats */}
+            <div className="ledger-page">
+                {/* Week Strip */}
+                <div className="week-strip">
+                    {weekDates.map(dateStr => {
+                        const d = new Date(dateStr + 'T00:00:00');
+                        const isToday = dateStr === today;
+                        const isSelected = dateStr === selectedDate;
+                        const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 3);
+                        const dayNum = d.getDate();
+                        const dayPct = calculateDailyPercentage(state.habits, state.habitLogs, dateStr);
 
                         return (
-                            <div className="habit-item-complex" key={habit.id} style={{ padding: 'var(--space-md) 0', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-                                    <button
-                                        className={`habit-check ${completed ? 'checked' : ''}`}
-                                        onClick={() => habit.target === 1 ? handleToggle(habit.id) : handleIncrement(habit.id, habit.target)}
-                                        aria-label={`Mark ${habit.name} as complete`}
-                                    >
-                                        {completed && <Check size={16} />}
-                                    </button>
-
-                                    <div style={{ flex: 1, cursor: habit.target > 1 ? 'pointer' : 'default' }} onClick={() => habit.target > 1 && handleIncrement(habit.id)}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                            <div className="habit-name" style={{ textDecoration: completed ? 'line-through' : 'none', opacity: completed ? 0.6 : 1, transition: 'all 0.3s' }}>
-                                                {habit.name}
-                                            </div>
-                                            <div className="habit-emoji" style={{ opacity: completed ? 0.5 : 1 }}>{habit.emoji}</div>
-                                        </div>
-
-                                        {habit.target > 1 && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                                                <div className="progress-bar-bg" style={{ flex: 1, height: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                                                    <div className="progress-bar-fill" style={{ width: `${progressPct}%`, height: '100%', background: 'var(--leather)', transition: 'width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }} />
-                                                </div>
-                                                <span className="handwriting" style={{ fontSize: '0.8rem', minWidth: '45px', textAlign: 'right' }}>
-                                                    {progress}/{habit.target} {habit.unit}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {habit.target > 1 && !completed && (
-                                        <button
-                                            className="btn-link"
-                                            onClick={(e) => { e.stopPropagation(); handleIncrement(habit.id); }}
-                                            style={{ color: 'var(--leather)', opacity: 0.8 }}
-                                        >
-                                            <PlusCircle size={20} />
-                                        </button>
-                                    )}
-
-                                    <button
-                                        className="btn-secondary btn-small"
-                                        onClick={() => handleDeleteHabit(habit.id)}
-                                        aria-label={`Delete ${habit.name}`}
-                                        style={{ border: 'none', color: 'var(--text-muted)', padding: '4px', opacity: 0.4 }}
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
+                            <div
+                                key={dateStr}
+                                className={`week-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayPct >= 50 ? 'completed' : ''}`}
+                                onClick={() => setSelectedDate(dateStr)}
+                            >
+                                <span className="day-label">{dayLabel}</span>
+                                <span className="day-num">{dayNum}</span>
+                                <span className="dot" />
                             </div>
                         );
                     })}
                 </div>
-            )}
 
-            {/* Add Habit Button */}
-            <button className="btn" onClick={() => setShowAddModal(true)} style={{ width: '100%' }}>
-                <Plus size={18} /> New Habit Page
-            </button>
+                {/* Daily Percentage & Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
+                    <h2 className="section-header" style={{ borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
+                        {formatDateShort(selectedDate)}
+                    </h2>
+                    {scheduledHabits.length > 0 && (
+                        <div className={`daily-pct ${pctRange}`}>
+                            {dailyPct}% — {getPercentageLabel(pctRange)}
+                        </div>
+                    )}
+                </div>
 
-            {/* Add Habit Modal */}
-            {showAddModal && (
-                <AddHabitModal onClose={() => setShowAddModal(false)} />
-            )}
+                {/* Micro-Encouragement Nudge */}
+                <div style={{ height: '24px', marginBottom: 'var(--space-md)' }}>
+                    {encouragement && (
+                        <div className="handwriting fade-in" style={{ color: 'var(--leather)', fontSize: '0.9rem', textAlign: 'center' }}>
+                            {encouragement}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Right Page: Journaling / Habit Execution */}
+            <div className="ledger-page">
+                {/* Habits List */}
+                {scheduledHabits.length === 0 ? (
+                    <div className="empty-state">
+                        <div className="icon">📝</div>
+                        <div className="title">No habits for this day</div>
+                        <div className="subtitle">Add a new habit to get started</div>
+                    </div>
+                ) : (
+                    <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
+                        {scheduledHabits.map(habit => {
+                            const log = getHabitLog(habit.id);
+                            const progress = log ? log.progress : 0;
+                            const completed = log ? log.completed : false;
+                            const progressPct = (progress / habit.target) * 100;
+
+                            return (
+                                <div className="habit-item-complex" key={habit.id} style={{ padding: 'var(--space-md) 0', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+                                        <button
+                                            className={`habit-check ${completed ? 'checked' : ''}`}
+                                            onClick={() => habit.target === 1 ? handleToggle(habit.id) : handleIncrement(habit.id, habit.target)}
+                                            aria-label={`Mark ${habit.name} as complete`}
+                                        >
+                                            {completed && <Check size={16} />}
+                                        </button>
+
+                                        <div style={{ flex: 1, cursor: habit.target > 1 ? 'pointer' : 'default' }} onClick={() => habit.target > 1 && handleIncrement(habit.id)}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                                <div className="habit-name" style={{ textDecoration: completed ? 'line-through' : 'none', opacity: completed ? 0.6 : 1, transition: 'all 0.3s' }}>
+                                                    {habit.name}
+                                                </div>
+                                                <div className="habit-emoji" style={{ opacity: completed ? 0.5 : 1 }}>{habit.emoji}</div>
+                                            </div>
+
+                                            {habit.target > 1 && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                                                    <div className="progress-bar-bg" style={{ flex: 1, height: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                                                        <div className="progress-bar-fill" style={{ width: `${progressPct}%`, height: '100%', background: 'var(--leather)', transition: 'width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }} />
+                                                    </div>
+                                                    <span className="handwriting" style={{ fontSize: '0.8rem', minWidth: '45px', textAlign: 'right' }}>
+                                                        {progress}/{habit.target} {habit.unit}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {habit.target > 1 && !completed && (
+                                            <button
+                                                className="btn-link"
+                                                onClick={(e) => { e.stopPropagation(); handleIncrement(habit.id); }}
+                                                style={{ color: 'var(--leather)', opacity: 0.8 }}
+                                            >
+                                                <PlusCircle size={20} />
+                                            </button>
+                                        )}
+
+                                        <button
+                                            className="btn-secondary btn-small"
+                                            onClick={() => handleDeleteHabit(habit.id)}
+                                            aria-label={`Delete ${habit.name}`}
+                                            style={{ border: 'none', color: 'var(--text-muted)', padding: '4px', opacity: 0.4 }}
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Add Habit Section */}
+                {showAddModal ? (
+                    <AddHabitForm onClose={() => setShowAddModal(false)} />
+                ) : (
+                    <button className="btn" onClick={() => setShowAddModal(true)} style={{ width: '100%' }}>
+                        <Plus size={18} /> New Habit
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
 
-// --- Add Habit Modal ---
-function AddHabitModal({ onClose }: { onClose: () => void }) {
+// --- Add Habit Form (Inline) ---
+function AddHabitForm({ onClose }: { onClose: () => void }) {
     const { dispatch } = useApp();
     const [name, setName] = useState('');
     const [emoji, setEmoji] = useState('🧘');
@@ -227,144 +232,140 @@ function AddHabitModal({ onClose }: { onClose: () => void }) {
     };
 
     return (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="modal-content">
-                <div className="modal-handle" />
+        <div className="card" style={{ marginBottom: 'var(--space-xl)' }}>
+            <h2 className="section-header" style={{ borderBottom: 'none', marginBottom: 'var(--space-md)' }}>New Habit</h2>
 
-                <h2 className="section-header" style={{ fontFamily: 'var(--font-cursive)' }}>New Habit</h2>
+            {/* Name */}
+            <div style={{ marginBottom: 'var(--space-lg)' }}>
+                <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
+                    What habit do you want to build?
+                </label>
+                <input
+                    className="input-field"
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="e.g., Morning Meditation"
+                    autoFocus
+                />
+            </div>
 
-                {/* Name */}
-                <div style={{ marginBottom: 'var(--space-lg)' }}>
+            {/* Emoji Picker */}
+            <div style={{ marginBottom: 'var(--space-lg)' }}>
+                <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-sm)' }}>
+                    Pick an icon
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
+                    {HABIT_EMOJIS.map(e => (
+                        <button
+                            key={e}
+                            onClick={() => setEmoji(e)}
+                            style={{
+                                fontSize: '1.5rem',
+                                padding: '6px',
+                                border: emoji === e ? '2px solid var(--leather)' : '2px solid transparent',
+                                borderRadius: 'var(--radius-md)',
+                                background: emoji === e ? 'rgba(139, 98, 64, 0.08)' : 'transparent',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease',
+                            }}
+                        >
+                            {e}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Category */}
+            <div style={{ marginBottom: 'var(--space-lg)' }}>
+                <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-sm)' }}>
+                    Category
+                </label>
+                <div style={{ display: 'flex', gap: 'var(--space-sm)', flexWrap: 'wrap' }}>
+                    {(Object.keys(CATEGORY_EMOJIS) as HabitCategory[]).map(cat => (
+                        <button
+                            key={cat}
+                            className={`tag-pill ${category === cat ? 'selected' : ''}`}
+                            onClick={() => setCategory(cat)}
+                            style={{ color: category === cat ? 'var(--leather)' : 'var(--text-secondary)', borderColor: category === cat ? 'var(--leather)' : 'var(--border-color)' }}
+                        >
+                            {CATEGORY_EMOJIS[cat]} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Frequency */}
+            <div style={{ marginBottom: 'var(--space-lg)' }}>
+                <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-sm)' }}>
+                    Which days?
+                </label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                    {ALL_DAYS.map(day => (
+                        <button
+                            key={day}
+                            onClick={() => toggleDay(day)}
+                            style={{
+                                flex: 1,
+                                padding: '8px 4px',
+                                fontFamily: 'var(--font-handwriting)',
+                                fontSize: '0.85rem',
+                                border: frequency.includes(day) ? '2px solid var(--leather)' : '2px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)',
+                                background: frequency.includes(day) ? 'var(--leather)' : 'transparent',
+                                color: frequency.includes(day) ? 'var(--parchment)' : 'var(--text-secondary)',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease',
+                            }}
+                        >
+                            {day}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Target */}
+            <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
+                <div style={{ flex: 1 }}>
                     <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
-                        What habit do you want to build?
+                        Target (Goal)
                     </label>
                     <input
                         className="input-field"
-                        type="text"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="e.g., Morning Meditation"
-                        autoFocus
+                        type="number"
+                        value={target}
+                        onChange={e => setTarget(e.target.value)}
+                        min="1"
                     />
                 </div>
-
-                {/* Emoji Picker */}
-                <div style={{ marginBottom: 'var(--space-lg)' }}>
-                    <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-sm)' }}>
-                        Pick an icon
+                <div style={{ flex: 1 }}>
+                    <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
+                        Unit
                     </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
-                        {HABIT_EMOJIS.map(e => (
-                            <button
-                                key={e}
-                                onClick={() => setEmoji(e)}
-                                style={{
-                                    fontSize: '1.5rem',
-                                    padding: '6px',
-                                    border: emoji === e ? '2px solid var(--leather)' : '2px solid transparent',
-                                    borderRadius: 'var(--radius-md)',
-                                    background: emoji === e ? 'rgba(139, 98, 64, 0.08)' : 'transparent',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s ease',
-                                }}
-                            >
-                                {e}
-                            </button>
-                        ))}
-                    </div>
+                    <select
+                        className="input-field"
+                        value={unit}
+                        onChange={e => setUnit(e.target.value)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <option value="times">times</option>
+                        <option value="minutes">minutes</option>
+                        <option value="glasses">glasses</option>
+                        <option value="pages">pages</option>
+                        <option value="reps">reps</option>
+                        <option value="km">km</option>
+                    </select>
                 </div>
+            </div>
 
-                {/* Category */}
-                <div style={{ marginBottom: 'var(--space-lg)' }}>
-                    <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-sm)' }}>
-                        Category
-                    </label>
-                    <div style={{ display: 'flex', gap: 'var(--space-sm)', flexWrap: 'wrap' }}>
-                        {(Object.keys(CATEGORY_EMOJIS) as HabitCategory[]).map(cat => (
-                            <button
-                                key={cat}
-                                className={`tag-pill ${category === cat ? 'selected' : ''}`}
-                                onClick={() => setCategory(cat)}
-                                style={{ color: category === cat ? 'var(--leather)' : 'var(--text-secondary)', borderColor: category === cat ? 'var(--leather)' : 'var(--border-color)' }}
-                            >
-                                {CATEGORY_EMOJIS[cat]} {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Frequency */}
-                <div style={{ marginBottom: 'var(--space-lg)' }}>
-                    <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-sm)' }}>
-                        Which days?
-                    </label>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                        {ALL_DAYS.map(day => (
-                            <button
-                                key={day}
-                                onClick={() => toggleDay(day)}
-                                style={{
-                                    flex: 1,
-                                    padding: '8px 4px',
-                                    fontFamily: 'var(--font-handwriting)',
-                                    fontSize: '0.85rem',
-                                    border: frequency.includes(day) ? '2px solid var(--leather)' : '2px solid var(--border-color)',
-                                    borderRadius: 'var(--radius-md)',
-                                    background: frequency.includes(day) ? 'var(--leather)' : 'transparent',
-                                    color: frequency.includes(day) ? 'var(--parchment)' : 'var(--text-secondary)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s ease',
-                                }}
-                            >
-                                {day}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Target */}
-                <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
-                    <div style={{ flex: 1 }}>
-                        <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
-                            Target (Goal)
-                        </label>
-                        <input
-                            className="input-field"
-                            type="number"
-                            value={target}
-                            onChange={e => setTarget(e.target.value)}
-                            min="1"
-                        />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <label className="handwriting" style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
-                            Unit
-                        </label>
-                        <select
-                            className="input-field"
-                            value={unit}
-                            onChange={e => setUnit(e.target.value)}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <option value="times">times</option>
-                            <option value="minutes">minutes</option>
-                            <option value="glasses">glasses</option>
-                            <option value="pages">pages</option>
-                            <option value="reps">reps</option>
-                            <option value="km">km</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
-                    <button className="btn-secondary btn" onClick={onClose} style={{ flex: 1 }}>
-                        Discard
-                    </button>
-                    <button className="btn" onClick={handleSubmit} style={{ flex: 1 }}>
-                        Add to Diary
-                    </button>
-                </div>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
+                <button className="btn-secondary btn" onClick={onClose} style={{ flex: 1 }}>
+                    Discard
+                </button>
+                <button className="btn" onClick={handleSubmit} style={{ flex: 1 }}>
+                    Add to Diary
+                </button>
             </div>
         </div>
     );
